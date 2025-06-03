@@ -232,8 +232,16 @@ async def generate_and_save_many(self, images: list[Image]) -> tuple[list[Image]
 
 [embed]
 
+**service**
+
+
 **create**
-	1. chunk_list에 대한 embed
+	1. chunk에 대한 embed : POST /embedding/{chunk_id}
+		- usecase
+			- 
+
+
+	1. chunk_list에 대한 embed : POST /embedding/chunks
 		- chunk에 대한 권한 확인
 		- request: chunk_id list
 		- response: success_list, error_list

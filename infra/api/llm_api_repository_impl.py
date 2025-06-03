@@ -1,6 +1,6 @@
 from fastapi import HTTPException
-from infra.api.haiqv_ollama import HaiqvOllamaLLM
-from domain.llms.repository import ILlmRepository
+from infra.wrapper.haiqv_ollama import HaiqvOllamaLLM
+from domain.llms.api_repository import ILlmAPIRepository
 import re
 
 
@@ -13,7 +13,7 @@ _PROMPT_TEMPLATE = """
 """
 
 
-class LlmRepositoryImpl(ILlmRepository):
+class LlmAPIRepositoryImpl(ILlmAPIRepository):
     """HaiQV Ollama 연동 구현"""
 
     def __init__(self, llm: HaiqvOllamaLLM):

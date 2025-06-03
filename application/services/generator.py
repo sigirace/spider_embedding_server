@@ -1,13 +1,13 @@
 from fastapi import HTTPException, status
 from domain.images.models import Image
 from domain.images.repository import IImageRepository
-from domain.llms.repository import ILlmRepository
+from domain.llms.api_repository import ILlmAPIRepository
 
 
 class Generator:
     def __init__(
         self,
-        llm_repository: ILlmRepository,
+        llm_repository: ILlmAPIRepository,
         image_repository: IImageRepository,
     ):
         self.llm_repository = llm_repository

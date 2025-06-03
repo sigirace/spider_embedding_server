@@ -1,4 +1,3 @@
-# infra/repositories/app_repository_impl.py
 from typing import Sequence
 from bson import ObjectId
 from motor.motor_asyncio import (

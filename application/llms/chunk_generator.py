@@ -1,12 +1,9 @@
 from datetime import UTC, datetime
 from typing import List, Tuple
 
-from fastapi import HTTPException, status
-
 from application.services.generator import Generator
 from application.services.getter import Getter
 from application.services.validator import Validator
-from domain.images.models import Image
 from domain.images.repository import IImageRepository
 from domain.llms.models import ChunkGeneratorError, ImageGeneratorError
 from utils.object_utils import get_str_id

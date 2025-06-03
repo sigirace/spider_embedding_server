@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class ILlmRepository(ABC):
+class ILlmAPIRepository(ABC):
     """LLM 호출용 추상 인터페이스"""
 
     @abstractmethod

@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 from application.chunks.get_chunk import GetChunk
 from application.chunks.get_chunk_list import GetChunkList
 from application.chunks.update_chunk import UpdateChunk
+from application.embeddings.chunk_embedding import ChunkEmbedding
 from application.images.get_image import GetImage
 from application.images.get_image_list import GetImageList
 from application.images.update_image import UpdateImage
@@ -10,13 +11,18 @@ from application.llms.chunk_generator import ChunkListGenerator
 from application.llms.document_generator import DocumentListGenerator
 from application.llms.image_generator import ImageGenerator
 from application.llms.image_list_generator import ImageListGenerator
+from application.services.embedder import Embedder
 from application.services.generator import Generator
 from application.services.getter import Getter
 from database.mongo import get_async_mongo_client, get_async_mongo_database
 from common.uow import MongoUnitOfWork
 from common.system_logger import SystemLogger
-from infra.api.haiqv_ollama import HaiqvOllamaLLM
-from infra.implement.llm_repository_impl import LlmRepositoryImpl
+
+from infra.factory.embed_factory import create_embed_api_repo
+from infra.factory.vector_store_factory import create_vector_store
+from infra.implement.embed_repository_impl import EmbedRepositoryImpl
+from infra.wrapper.haiqv_ollama import HaiqvOllamaLLM
+from infra.api.llm_api_repository_impl import LlmAPIRepositoryImpl
 from infra.service.file_storage_service import LocalFileStorageService
 from infra.implement.app_repository_impl import AppRepositoryImpl
 from infra.implement.document_repository_impl import DocumentRepositoryImpl
@@ -75,8 +81,12 @@ class Container(containers.DeclarativeContainer):
         db=motor_db,
     )
     llm_repository = providers.Factory(
-        LlmRepositoryImpl,
+        LlmAPIRepositoryImpl,
         llm=haiqv_ollama_llm,
+    )
+    embed_repository = providers.Factory(
+        EmbedRepositoryImpl,
+        db=motor_db,
     )
 
     # service
@@ -105,10 +115,19 @@ class Container(containers.DeclarativeContainer):
     )
     getter = providers.Factory(
         Getter,
+        embed_repository=embed_repository,
         image_repository=image_repository,
         chunk_repository=chunk_repository,
         document_repository=document_repository,
         app_repository=app_repository,
+    )
+    embedder = providers.Factory(
+        Embedder,
+        embed_api_repo_factory=providers.Object(create_embed_api_repo),
+        embed_repository=embed_repository,
+        chunk_repository=chunk_repository,
+        vector_store_factory=providers.Object(create_vector_store),
+        uow_factory=uow_factory,
     )
 
     # app
@@ -225,4 +244,12 @@ class Container(containers.DeclarativeContainer):
         getter=getter,
         generator=generator,
         validator=validator,
+    )
+
+    # embedding
+    chunk_embedding = providers.Factory(
+        ChunkEmbedding,
+        validator=validator,
+        getter=getter,
+        embedder=embedder,
     )
