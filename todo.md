@@ -154,6 +154,80 @@
 **delete**
 
 
+[llm]
+
+**service**
+- description_generator(image)
+async def generate_and_save(self, image: Image) -> Image:
+        validated = self.validator.validate(image)
+        generated = await self.generator_service.run(validated)
+        image_id = await self.image_repo.save(generated)
+        generated.id = image_id
+        return generated
+
+async def generate_and_save_many(self, images: list[Image]) -> tuple[list[Image], list[str]]:
+	success = []
+	failed = []
+	for image in images:
+		try:
+			result = await self.generate_and_save(image)
+			success.append(result)
+		except Exception as e:
+			failed.append(str(e))
+	return success, failed
+
+**create**
+	1. image 개별에 대한 생성 -> generator/{image_id}
+		- usecase
+			- img validator -> Image
+			- generator service
+			- img_repo save
+			- return image
+
+	2. image 리스트에 대한 생성 ->	generator/image
+		- req: image_list
+		- usecase
+			- for img in img_list
+				- img validator -> Image
+				- generator service
+				- img_repo save
+			- return success, error
+
+	3. chunk list에 대한 생성 -> generator/chuk
+		- req: chunk_list
+		- usecase
+			- for chunk in chunk_list
+				- chunk validator -> chunk
+				- getter service -> List[Image]
+					- for image in img_list
+						- validator -> Image
+						- generator service
+						- img_repo save
+			- return success, error
+
+
+	4. documnet에 대한 생성 -> generator/documnet
+		- req: documnet_list
+		- usecase
+			- for document in document_list
+				- document validator -> Document
+				- getter service -> List[Image]
+					- for image in img_list
+						- validator -> Image
+						- generator service
+						- img_repo save
+			- return success, error
+
+	5. app에 대한 생성 -> generator/app
+		- req: app_id
+		- usecase
+			- app validator -> App
+			- getter service -> List[Image]
+				- for image in img_list
+					- validator -> Image
+					- generator service
+					- img_repo save
+
 
 
 [embed]

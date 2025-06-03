@@ -5,9 +5,18 @@ from application.chunks.update_chunk import UpdateChunk
 from application.images.get_image import GetImage
 from application.images.get_image_list import GetImageList
 from application.images.update_image import UpdateImage
+from application.llms.app_generator import AppGenerator
+from application.llms.chunk_generator import ChunkListGenerator
+from application.llms.document_generator import DocumentListGenerator
+from application.llms.image_generator import ImageGenerator
+from application.llms.image_list_generator import ImageListGenerator
+from application.services.generator import Generator
+from application.services.getter import Getter
 from database.mongo import get_async_mongo_client, get_async_mongo_database
 from common.uow import MongoUnitOfWork
 from common.system_logger import SystemLogger
+from infra.api.haiqv_ollama import HaiqvOllamaLLM
+from infra.implement.llm_repository_impl import LlmRepositoryImpl
 from infra.service.file_storage_service import LocalFileStorageService
 from infra.implement.app_repository_impl import AppRepositoryImpl
 from infra.implement.document_repository_impl import DocumentRepositoryImpl
@@ -45,6 +54,9 @@ class Container(containers.DeclarativeContainer):
     # logger
     system_logger = providers.Singleton(SystemLogger, db=motor_db)
 
+    # api
+    haiqv_ollama_llm = providers.Singleton(HaiqvOllamaLLM)
+
     # repository
     app_repository = providers.Factory(
         AppRepositoryImpl,
@@ -61,6 +73,10 @@ class Container(containers.DeclarativeContainer):
     image_repository = providers.Factory(
         ImageRepositoryImpl,
         db=motor_db,
+    )
+    llm_repository = providers.Factory(
+        LlmRepositoryImpl,
+        llm=haiqv_ollama_llm,
     )
 
     # service
@@ -81,6 +97,18 @@ class Container(containers.DeclarativeContainer):
         image_repository=image_repository,
         file_storage_service=file_storage_service,
         uow_factory=uow_factory,
+    )
+    generator = providers.Factory(
+        Generator,
+        llm_repository=llm_repository,
+        image_repository=image_repository,
+    )
+    getter = providers.Factory(
+        Getter,
+        image_repository=image_repository,
+        chunk_repository=chunk_repository,
+        document_repository=document_repository,
+        app_repository=app_repository,
     )
 
     # app
@@ -160,5 +188,41 @@ class Container(containers.DeclarativeContainer):
     update_image = providers.Factory(
         UpdateImage,
         image_repository=image_repository,
+        validator=validator,
+    )
+
+    # llm
+    image_generator = providers.Factory(
+        ImageGenerator,
+        image_repository=image_repository,
+        generator=generator,
+        validator=validator,
+    )
+    image_list_generator = providers.Factory(
+        ImageListGenerator,
+        image_repository=image_repository,
+        getter=getter,
+        generator=generator,
+        validator=validator,
+    )
+    chunk_list_generator = providers.Factory(
+        ChunkListGenerator,
+        image_repository=image_repository,
+        getter=getter,
+        generator=generator,
+        validator=validator,
+    )
+    document_list_generator = providers.Factory(
+        DocumentListGenerator,
+        image_repository=image_repository,
+        getter=getter,
+        generator=generator,
+        validator=validator,
+    )
+    app_generator = providers.Factory(
+        AppGenerator,
+        image_repository=image_repository,
+        getter=getter,
+        generator=generator,
         validator=validator,
     )

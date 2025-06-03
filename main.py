@@ -18,6 +18,7 @@ from interface.controller.router.app_router import router as app_router
 from interface.controller.router.document_router import router as document_router
 from interface.controller.router.chunk_router import router as chunk_router
 from interface.controller.router.image_router import router as image_router
+from interface.controller.router.llm_router import router as llm_router
 from middleware.request_context import RequestContextMiddleware
 
 prefix = ""
@@ -60,6 +61,7 @@ def create_app() -> FastAPI:
     app.include_router(document_router, tags=["DOCUMENT"])
     app.include_router(chunk_router, tags=["CHUNK"])
     app.include_router(image_router, tags=["IMAGE"])
+    app.include_router(llm_router, tags=["LLM"])
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
