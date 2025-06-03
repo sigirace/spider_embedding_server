@@ -1,31 +1,51 @@
+from contextlib import asynccontextmanager
+
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from starlette.middleware.cors import CORSMiddleware
-from starlette_context.middleware import RawContextMiddleware
 from fastapi.openapi.docs import (
     get_redoc_html,
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
 )
-from interface.controller.router.app_router import router as app_router
-
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from starlette.middleware.cors import CORSMiddleware
+from starlette_context.middleware import RawContextMiddleware
 
 from containers import Container
-from middleware.logging import RequestLoggingMiddleware
+from database.setup import set_all_indexes
+from interface.controller.router.app_router import router as app_router
+from interface.controller.router.document_router import router as document_router
+from interface.controller.router.chunk_router import router as chunk_router
+from interface.controller.router.image_router import router as image_router
+from middleware.request_context import RequestContextMiddleware
 
 prefix = ""
 
 
-def create_app():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    container = Container()
+    app.container = container
+
+    db = container.motor_db()
+    await set_all_indexes(db)
+
+    yield
+
+
+def create_app() -> FastAPI:
     app = FastAPI(
         title="Spider Embedding API",
+        lifespan=lifespan,
         openapi_url=f"{prefix}/openapi.json",
         docs_url=None,
         redoc_url=None,
-        swagger_ui_parameters={"syntaxHighlight.theme": "obsidian"},
+        swagger_ui_parameters={
+            "syntaxHighlight.theme": "obsidian",
+        },
     )
+
     app.openapi_version = "3.0.3"
 
     app.mount(
@@ -37,14 +57,17 @@ def create_app():
     api_router = APIRouter(prefix=f"{prefix}")
     app.include_router(api_router)
     app.include_router(app_router, tags=["APP"])
+    app.include_router(document_router, tags=["DOCUMENT"])
+    app.include_router(chunk_router, tags=["CHUNK"])
+    app.include_router(image_router, tags=["IMAGE"])
     app.add_middleware(
-        CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_methods=["*"],
+        allow_headers=["*"],
     )
     app.add_middleware(RawContextMiddleware)
-    app.add_middleware(RequestLoggingMiddleware)
-
-    container = Container()
-    app.container = container
+    app.add_middleware(RequestContextMiddleware)
 
     return app
 

@@ -1,8 +1,8 @@
-from common.exception import InternalServerError
+from fastapi import HTTPException, status
 from config import get_settings
 from jose import ExpiredSignatureError, JWTError, jwt
 
-from domain.users.exception import ExpiredToken, InvalidToken
+from domain.users.exceptions import ExpiredToken, InvalidToken
 
 settings = get_settings()
 
@@ -30,4 +30,7 @@ def decode_token(token: str) -> dict:
         raise InvalidToken
 
     except Exception as e:
-        raise InternalServerError(str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e),
+        )

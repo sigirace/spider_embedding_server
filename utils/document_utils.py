@@ -3,8 +3,6 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from pymupdf4llm import to_markdown
 
-from utils.file_utils import get_image_path
-
 
 def get_spliter(
     chunk_size: int = 500,
@@ -40,11 +38,9 @@ def extract_tags(md_text: str) -> list[str]:
 def chunking(
     chunk_size: int,
     chunk_overlap: int,
-    file_path: str,  # ex) ./data/app_id/1234.pdf
-    img_save_path: str,  # ex) app_id/meta_id
+    file_path: str,  # ex) ./static/data/app_id/document_name.ext
+    image_path: str,  # ex) ./static/data/app_id/document_id
 ) -> list[Document]:
-
-    image_path = get_image_path(img_save_path)  # ./static/data/app_id/document_id
 
     # 이미지 포함 마크다운 추출
     page_chunks = to_markdown(

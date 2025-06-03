@@ -1,38 +1,30 @@
-# common/uow.py
-from __future__ import annotations
-from typing import AsyncIterator
-from motor.motor_asyncio import (
-    AsyncIOMotorClient,
-    AsyncIOMotorClientSession,
-)
+from typing import Optional
+from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorClientSession
 
 
 class MongoUnitOfWork:
-    """
-    모든 컬렉션을 하나의 Mongo 'multi-document transaction'으로 묶어
-    원자적 커밋/롤백을 보장한다.
-    사용 예:
-        async with uow as session:
-            await repo_a.add(..., session=session)
-            await repo_b.update(..., session=session)
-    """
+    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+        self._db = db
+        self._client = db.client
+        self._session: Optional[AsyncIOMotorClientSession] = None
 
-    def __init__(self, client: AsyncIOMotorClient) -> None:
-        self._client = client
-        self._session: AsyncIOMotorClientSession | None = None
-
-    # -------------------------------------------------
-    async def __aenter__(self) -> AsyncIOMotorClientSession:
+    async def __aenter__(self) -> "MongoUnitOfWork":
         self._session = await self._client.start_session()
         self._session.start_transaction()
-        return self._session           # use-cases obtain the session here
+        return self
 
     async def __aexit__(self, exc_type, exc, tb) -> None:
         try:
             if exc_type:
-                await self._session.abort_transaction()   # rollback
+                await self._session.abort_transaction()
             else:
-                await self._session.commit_transaction()  # commit
+                await self._session.commit_transaction()
         finally:
             await self._session.end_session()
             self._session = None
+
+    @property
+    def session(self) -> AsyncIOMotorClientSession:
+        if self._session is None:
+            raise RuntimeError("Session not active")
+        return self._session

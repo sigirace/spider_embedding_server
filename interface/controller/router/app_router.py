@@ -1,23 +1,71 @@
-from fastapi import APIRouter, Depends, HTTPException
-from dependency_injector.wiring import inject, Provide
+from typing import List
 
-from common.exception import InternalServerError
-from common.system_logger import SystemLogger
+from dependency_injector.wiring import Provide, inject
+from fastapi import APIRouter, Depends
+
+from application.apps.create_app import CreateApp
+from application.apps.get_app import GetApp
+from application.apps.get_app_list import GetAppList
+from application.apps.update_app import UpdateApp
+from common.log_wrapper import log_request
 from containers import Container
 from domain.users.models import User
 from interface.controller.dependency.auth import get_current_user
+from interface.dto.app_dto import AppRequest, AppResponse
+from interface.mapper.app_mapper import AppMapper
 
 router = APIRouter(prefix="/app")
 
 
-@router.get("/")
+@router.post("/", response_model=AppResponse)
+@log_request()
 @inject
-async def hello(
-    # user: User = Depends(get_current_user),
-    logger: SystemLogger = Depends(Provide[Container.system_logger]),
+async def create_app(
+    request: AppRequest,
+    user: User = Depends(get_current_user),
+    create_app: CreateApp = Depends(Provide[Container.create_app]),
 ):
+    app = AppMapper.to_domain(user.user_id, request)
+    created_app = await create_app(app)
+    return AppMapper.to_response(created_app)
 
-    await logger.info("Started sample endpoint")
-    await logger.info("Completed sample endpoint")
-    await logger.error("Error!!!!!!")
-    return {"data": f"good"}
+
+@router.get("/list", response_model=List[AppResponse])
+@log_request()
+@inject
+async def get_app_list(
+    user: User = Depends(get_current_user),
+    get_app_list: GetAppList = Depends(Provide[Container.get_app_list]),
+):
+    apps = await get_app_list(user.user_id)
+    return [AppMapper.to_response(app) for app in apps]
+
+
+@router.get("/{app_id}", response_model=AppResponse)
+@log_request()
+@inject
+async def get_app(
+    app_id: str,
+    user: User = Depends(get_current_user),
+    get_app: GetApp = Depends(Provide[Container.get_app]),
+):
+    app = await get_app(app_id, user.user_id)
+    return AppMapper.to_response(app)
+
+
+@router.put("/{app_id}", response_model=AppResponse)
+@log_request()
+@inject
+async def update_app(
+    app_id: str,
+    request: AppRequest,
+    user: User = Depends(get_current_user),
+    update_app: UpdateApp = Depends(Provide[Container.update_app]),
+):
+    app = AppMapper.to_domain(user.user_id, request)
+    updated_app = await update_app(
+        app_id,
+        app,
+        user.user_id,
+    )
+    return AppMapper.to_response(updated_app)
