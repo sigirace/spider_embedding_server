@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from typing import Callable, List, Any
+import uuid
 
 from bson import ObjectId
 
@@ -59,7 +60,7 @@ class Embedder:
         embed_schema: EmbedSchema,
         model_type: str,
         user_id: str,
-        collection_name: str = "chunk_vectors",
+        collection_name: str,
     ) -> str:
         query = self.build_query(embed_schema)
         vector = await self.embed(query, model_type)
@@ -75,6 +76,7 @@ class Embedder:
             record = Embedding(
                 chunk_id=chunk.id,
                 embed_pk=embed_pk,
+                collection_name=collection_name,
                 model_type=EmbedModelType(model_type),
                 creator=user_id,
             )

@@ -95,6 +95,21 @@ class MilvusService(IVectorStoreRepository):
         await asyncio.to_thread(self._collection.delete, expr)
         await asyncio.to_thread(self._collection.flush)
 
+    async def drop(self):
+        """
+        컬렉션이 존재하면 삭제
+        """
+        if await asyncio.to_thread(
+            utility.has_collection,
+            self.collection_name,
+            using=self._alias,
+        ):
+            await asyncio.to_thread(
+                utility.drop_collection,
+                self.collection_name,
+                using=self._alias,
+            )
+
     # 내부 메서드
     def _create_collection(self):
         id_field = FieldSchema(

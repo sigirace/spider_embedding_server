@@ -24,6 +24,7 @@ class Embedding(BaseModel):
     id: ObjectId = Field(default_factory=ObjectId, alias="_id")
     chunk_id: ObjectId
     embed_pk: str
+    collection_name: str
     model_type: EmbedModelType
     creator: str
     created_at: datetime = Field(

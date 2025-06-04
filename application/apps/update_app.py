@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from bson import ObjectId
 from fastapi import HTTPException, status
 from application.services.validator import Validator
-from domain.apps.models import App
+from domain.apps.models import App, AppUpdate
 from domain.apps.repository import IAppRepository
 
 
@@ -18,25 +18,23 @@ class UpdateApp:
     async def __call__(
         self,
         app_id: str,
-        app: App,
+        app: AppUpdate,
+        user_id: str,
     ) -> App:
         try:
             existing_app = await self.validator.app_validator(
                 app_id=app_id,
-                user_id=app.creator,
+                user_id=user_id,
             )
 
-            if existing_app.app_name != app.app_name:
-                await self.app_repository.duplicate_check(
-                    creator=app.creator,
-                    app_name=app.app_name,
-                )
-
-            existing_app.updater = app.creator
+            existing_app.description = app.description
+            existing_app.keywords = app.keywords
+            existing_app.updater = user_id
             existing_app.updated_at = datetime.now(UTC)
-            await self.app_repository.update(existing_app.id, app)
 
-            return app
+            await self.app_repository.update(existing_app.id, existing_app)
+
+            return existing_app
 
         except HTTPException as e:
             raise e

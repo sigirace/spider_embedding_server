@@ -45,3 +45,11 @@ class IChunkRepository(ABC):
         *,
         session: AsyncIOMotorClientSession | None = None,
     ): ...
+
+    @abstractmethod
+    async def delete(
+        self,
+        chunk_id: ObjectId,
+        *,
+        session: AsyncIOMotorClientSession | None = None,
+    ): ...

@@ -1,15 +1,27 @@
-from domain.apps.models import App
-from interface.dto.app_dto import AppRequest, AppResponse
+from domain.apps.models import App, AppUpdate
+from interface.dto.app_dto import (
+    AppCreateRequest,
+    AppResponse,
+    AppUpdateRequest,
+)
 
 
 class AppMapper:
+
     @staticmethod
-    def to_domain(user_id: str, req: AppRequest) -> App:
+    def to_domain(user_id: str, req: AppCreateRequest) -> App:
         return App(
             app_name=req.app_name,
             description=req.description,
             keywords=req.keywords,
             creator=user_id,
+        )
+
+    @staticmethod
+    def to_update_domain(req: AppUpdateRequest) -> AppUpdate:
+        return AppUpdate(
+            description=req.description,
+            keywords=req.keywords,
         )
 
     @staticmethod

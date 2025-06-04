@@ -19,3 +19,8 @@ class IVectorStoreRepository(ABC):
     async def delete(self, ids: List[str]):
         """저장된 ID를 삭제"""
         ...
+
+    @abstractmethod
+    async def drop(self):
+        """컬렉션 삭제"""
+        ...

@@ -2,7 +2,9 @@ from dependency_injector import containers, providers
 from application.chunks.get_chunk import GetChunk
 from application.chunks.get_chunk_list import GetChunkList
 from application.chunks.update_chunk import UpdateChunk
+from application.embeddings.app_embedding import AppEmbedding
 from application.embeddings.chunk_embedding import ChunkEmbedding
+from application.embeddings.document_embedding import DocumentEmbedding
 from application.images.get_image import GetImage
 from application.images.get_image_list import GetImageList
 from application.images.update_image import UpdateImage
@@ -11,6 +13,7 @@ from application.llms.chunk_generator import ChunkListGenerator
 from application.llms.document_generator import DocumentListGenerator
 from application.llms.image_generator import ImageGenerator
 from application.llms.image_list_generator import ImageListGenerator
+from application.services.deleter import Deleter
 from application.services.embedder import Embedder
 from application.services.generator import Generator
 from application.services.getter import Getter
@@ -100,6 +103,7 @@ class Container(containers.DeclarativeContainer):
         document_repository=document_repository,
         chunk_repository=chunk_repository,
         image_repository=image_repository,
+        embed_repository=embed_repository,
     )
     chunker = providers.Factory(
         Chunker,
@@ -120,6 +124,17 @@ class Container(containers.DeclarativeContainer):
         chunk_repository=chunk_repository,
         document_repository=document_repository,
         app_repository=app_repository,
+    )
+    deleter = providers.Factory(
+        Deleter,
+        embed_repository=embed_repository,
+        image_repository=image_repository,
+        chunk_repository=chunk_repository,
+        document_repository=document_repository,
+        app_repository=app_repository,
+        vector_store_factory=providers.Object(create_vector_store),
+        file_storage_service=file_storage_service,
+        uow_factory=uow_factory,
     )
     embedder = providers.Factory(
         Embedder,
@@ -249,6 +264,20 @@ class Container(containers.DeclarativeContainer):
     # embedding
     chunk_embedding = providers.Factory(
         ChunkEmbedding,
+        validator=validator,
+        getter=getter,
+        embedder=embedder,
+    )
+
+    document_embedding = providers.Factory(
+        DocumentEmbedding,
+        validator=validator,
+        getter=getter,
+        embedder=embedder,
+    )
+
+    app_embedding = providers.Factory(
+        AppEmbedding,
         validator=validator,
         getter=getter,
         embedder=embedder,

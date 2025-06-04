@@ -49,3 +49,5 @@ langchain~=0.3.17
 langchain-community~=0.3.17
 langchain_milvus==0.1.8
 pymupdf4llm==0.0.24
+langchain_ollama==0.3.3
+python-multipart==0.0.20

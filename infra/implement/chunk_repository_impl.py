@@ -82,3 +82,14 @@ class ChunkRepositoryImpl(IChunkRepository):
             {"document_id": document_id},
             session=session,
         )
+
+    async def delete(
+        self,
+        chunk_id: ObjectId,
+        *,
+        session: AsyncIOMotorClientSession | None = None,
+    ) -> None:
+        await self.collection.delete_one(
+            {"_id": chunk_id},
+            session=session,
+        )

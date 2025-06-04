@@ -5,6 +5,7 @@ from domain.chunks.models import Chunk
 from domain.chunks.repository import IChunkRepository
 from domain.documents.models import Document
 from domain.documents.repository import IDocumentRepository
+from domain.embeddings.repository import IEmbedRepository
 from domain.images.models import Image
 from domain.images.repository import IImageRepository
 from utils.object_utils import get_object_id
@@ -18,11 +19,13 @@ class Validator:
         document_repository: IDocumentRepository,
         chunk_repository: IChunkRepository,
         image_repository: IImageRepository,
+        embed_repository: IEmbedRepository,
     ):
         self.document_repository = document_repository
         self.app_repository = app_repository
         self.chunk_repository = chunk_repository
         self.image_repository = image_repository
+        self.embed_repository = embed_repository
 
     async def app_validator(
         self,
@@ -105,3 +108,22 @@ class Validator:
             await self.chunk_validator(image.chunk_id, user_id)
 
         return image
+
+    async def embed_validator(
+        self,
+        embed_id: str,
+        user_id: str,
+    ):
+        oid = get_object_id(embed_id)
+        embedding = await self.embed_repository.get(oid)
+
+        if not embedding:
+            return HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Embedding을 찾을 수 없습니다.",
+            )
+
+        if embedding.creator != user_id:
+            await self.chunk_validator(chunk_id=embedding.chunk_id, user_id=user_id)
+
+        return embedding

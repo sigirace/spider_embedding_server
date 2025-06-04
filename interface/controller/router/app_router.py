@@ -11,7 +11,7 @@ from common.log_wrapper import log_request
 from containers import Container
 from domain.users.models import User
 from interface.controller.dependency.auth import get_current_user
-from interface.dto.app_dto import AppRequest, AppResponse
+from interface.dto.app_dto import AppCreateRequest, AppResponse, AppUpdateRequest
 from interface.mapper.app_mapper import AppMapper
 
 router = APIRouter(prefix="/app")
@@ -21,7 +21,7 @@ router = APIRouter(prefix="/app")
 @log_request()
 @inject
 async def create_app(
-    request: AppRequest,
+    request: AppCreateRequest,
     user: User = Depends(get_current_user),
     create_app: CreateApp = Depends(Provide[Container.create_app]),
 ):
@@ -58,14 +58,14 @@ async def get_app(
 @inject
 async def update_app(
     app_id: str,
-    request: AppRequest,
+    request: AppUpdateRequest,
     user: User = Depends(get_current_user),
     update_app: UpdateApp = Depends(Provide[Container.update_app]),
 ):
-    app = AppMapper.to_domain(user.user_id, request)
+    app = AppMapper.to_update_domain(request)
     updated_app = await update_app(
-        app_id,
-        app,
-        user.user_id,
+        app_id=app_id,
+        app=app,
+        user_id=user.user_id,
     )
     return AppMapper.to_response(updated_app)

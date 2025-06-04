@@ -29,6 +29,11 @@ class UpdateChunk:
             chunk.tags = request.tags
             chunk.updater = user_id
             chunk.updated_at = datetime.now(UTC)
+
+            if chunk.embeded_state:
+                chunk.embeded_state = False
+                chunk.embeded_at = None
+
             await self.chunk_repository.update(chunk)
 
             chunk_detail = await self.chunker.get_chunk_detail(chunk)

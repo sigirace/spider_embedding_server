@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends
 
+from application.embeddings.app_embedding import AppEmbedding
 from application.embeddings.chunk_embedding import ChunkEmbedding
+from application.embeddings.document_embedding import DocumentEmbedding
 from common.log_wrapper import log_request
 from domain.users.models import User
 from interface.controller.dependency.auth import get_current_user
@@ -27,3 +29,47 @@ async def chunk_embedding(
         user_id=user.user_id,
     )
     return {"message": "Chunk embedding completed"}
+
+
+@router.post("/document/{document_id}")
+@log_request()
+@inject
+async def document_embedding(
+    document_id: str,
+    embed_request: EmbedRequest,
+    user: User = Depends(get_current_user),
+    document_embedding: DocumentEmbedding = Depends(
+        Provide[Container.document_embedding]
+    ),
+):
+    success_list, error_list = await document_embedding(
+        document_id=document_id,
+        model_type=embed_request.model_type.value,
+        user_id=user.user_id,
+    )
+
+    return {
+        "success_list": success_list,
+        "error_list": error_list,
+    }
+
+
+@router.post("/app/{app_id}")
+@log_request()
+@inject
+async def app_embedding(
+    app_id: str,
+    embed_request: EmbedRequest,
+    user: User = Depends(get_current_user),
+    app_embedding: AppEmbedding = Depends(Provide[Container.app_embedding]),
+):
+    success_list, error_list = await app_embedding(
+        app_id=app_id,
+        model_type=embed_request.model_type.value,
+        user_id=user.user_id,
+    )
+
+    return {
+        "success_list": success_list,
+        "error_list": error_list,
+    }

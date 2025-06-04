@@ -71,5 +71,15 @@ class Getter:
         chunk = await self.chunk_repository.get(image.chunk_id)
         return await self.get_app_by_chunk(chunk)
 
+    async def get_app_by_document(self, document: Document) -> App:
+        return await self.app_repository.get(document.app_id)
+
     async def get_embeddings_by_chunk(self, chunk: Chunk) -> Embedding | None:
         return await self.embed_repository.get_by_chunk_id(chunk.id)
+
+    async def get_embedding_by_document(self, document: Document) -> Embedding | None:
+        chunks = await self.get_chunk_by_document(document)
+        embedding_lists = await asyncio.gather(
+            *(self.get_embeddings_by_chunk(chunk) for chunk in chunks)
+        )
+        return list(chain.from_iterable(embedding_lists))
