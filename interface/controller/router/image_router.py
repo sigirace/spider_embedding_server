@@ -2,6 +2,7 @@ import base64
 import mimetypes
 from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse, JSONResponse
+from application.images.delete_image import DeleteImage
 from application.images.get_image import GetImage
 from application.images.update_image import UpdateImage
 from interface.controller.dependency.auth import get_current_user
@@ -9,7 +10,6 @@ from domain.users.models import User
 from dependency_injector.wiring import inject, Provide
 from common.log_wrapper import log_request
 from application.images.get_image_list import GetImageList
-from domain.images.models import Image
 from typing import List
 from containers import Container
 from interface.dto.image_dto import ImageResponse, ImageUpdateRequest
@@ -96,3 +96,16 @@ async def show_image_base64(
         encoded = base64.b64encode(f.read()).decode("utf-8")
     data_url = f"data:{mime_type};base64,{encoded}"
     return JSONResponse(content={"data_url": data_url})
+
+
+@router.delete("/{image_id}")
+@log_request()
+@inject
+async def delete_image(
+    image_id: str,
+    user: User = Depends(get_current_user),
+    delete_image: DeleteImage = Depends(Provide[Container.delete_image]),
+):
+    await delete_image(image_id, user.user_id)
+
+    return {"message": f"{image_id} Image Deleted"}

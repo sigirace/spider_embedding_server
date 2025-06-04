@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, File, UploadFile
 
 from application.documents.create_document import CreateDocument
+from application.documents.delete_document import DeleteDocument
 from application.documents.get_document import GetDocument
 from application.documents.get_document_list import GetDocumentList
 from application.documents.update_document import UpdateDocument
@@ -80,3 +81,16 @@ async def update_document(
     )
 
     return DocumentMapper.to_response(document)
+
+
+@router.delete("/{document_id}")
+@log_request()
+@inject
+async def delete_document(
+    document_id: str,
+    user: User = Depends(get_current_user),
+    delete_document: DeleteDocument = Depends(Provide[Container.delete_document]),
+):
+    await delete_document(document_id, user.user_id)
+
+    return {"message": f"{document_id} Document Deleted"}

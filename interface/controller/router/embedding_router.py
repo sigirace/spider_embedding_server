@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends
 
 from application.embeddings.app_embedding import AppEmbedding
 from application.embeddings.chunk_embedding import ChunkEmbedding
+from application.embeddings.delete_embedding import DeleteEmbedding
 from application.embeddings.document_embedding import DocumentEmbedding
+from application.services.deleter import Deleter
 from common.log_wrapper import log_request
 from domain.users.models import User
 from interface.controller.dependency.auth import get_current_user
@@ -73,3 +75,16 @@ async def app_embedding(
         "success_list": success_list,
         "error_list": error_list,
     }
+
+
+@router.delete("/embed/{embed_id}")
+@log_request()
+@inject
+async def delete_chunk_embedding(
+    embed_id: str,
+    user: User = Depends(get_current_user),
+    delete_embedding: DeleteEmbedding = Depends(Provide[Container.delete_embedding]),
+):
+    await delete_embedding(embed_id, user.user_id)
+
+    return {"message": f"{embed_id} Embedding Deleted"}

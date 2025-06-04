@@ -56,7 +56,15 @@ class Deleter:
                 session=session,
             )
 
-    async def delete_image(self, image: Image, session=None):
+            chunk = await self.chunk_repository.get(embedding.chunk_id)
+            chunk.embeded_state = False
+            chunk.embeded_at = None
+            await self.chunk_repository.update(
+                chunk,
+                session=session,
+            )
+
+    async def delete_image(self, image: Image, embed_deleted=False, session=None):
         async with self._uow_factory() as uow:
 
             if not session:
@@ -66,6 +74,15 @@ class Deleter:
                 image_id=image.id,
                 session=session,
             )
+
+            if not embed_deleted:
+
+                chunk = await self.chunk_repository.get(image.chunk_id)
+                embedding = await self.getter.get_embeddings_by_chunk(chunk)
+
+                if embedding:
+                    await self.delete_embed(embedding, session=session)
+
             await self.fs.delete_file(image.image_path)
 
     async def delete_chunk(self, chunk: Chunk, session=None):
@@ -73,9 +90,9 @@ class Deleter:
             if not session:
                 session = uow.session
 
-            embedding_list = await self.getter.get_embeddings_by_chunk(chunk)
+            embedding = await self.getter.get_embeddings_by_chunk(chunk)
 
-            for embedding in embedding_list:
+            if embedding:
                 await self.delete_embed(
                     embedding=embedding,
                     session=session,
@@ -86,6 +103,7 @@ class Deleter:
             for image in image_list:
                 await self.delete_image(
                     image=image,
+                    embed_deleted=True,
                     session=session,
                 )
 

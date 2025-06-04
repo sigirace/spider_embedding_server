@@ -55,9 +55,10 @@ class LocalFileStorageService:
         """
         try:
             target = (self.base / folder_name).resolve()
+            base_resolved = self.base.resolve()
 
             # 보안: base 밖의 경로 삭제 방지
-            if self.base not in target.parents:
+            if base_resolved not in target.parents:
                 raise FileServiceError(
                     detail="삭제 대상이 base 디렉토리 외부에 있습니다."
                 )
@@ -73,7 +74,6 @@ class LocalFileStorageService:
             p = Path(path)
             if p.exists() and p.is_file():
                 await self.move_to_trash(path=path)
-                p.unlink()
             await self.delete_parent_dir_if_empty(file_path=path)
         except Exception as e:
             raise FileServiceError(detail=str(e))

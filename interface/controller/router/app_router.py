@@ -4,6 +4,7 @@ from dependency_injector.wiring import Provide, inject
 from fastapi import APIRouter, Depends
 
 from application.apps.create_app import CreateApp
+from application.apps.delete_app import DeleteApp
 from application.apps.get_app import GetApp
 from application.apps.get_app_list import GetAppList
 from application.apps.update_app import UpdateApp
@@ -69,3 +70,16 @@ async def update_app(
         user_id=user.user_id,
     )
     return AppMapper.to_response(updated_app)
+
+
+@router.delete("/{app_id}")
+@log_request()
+@inject
+async def delete_app(
+    app_id: str,
+    user: User = Depends(get_current_user),
+    delete_app: DeleteApp = Depends(Provide[Container.delete_app]),
+):
+    await delete_app(app_id, user.user_id)
+
+    return {"message": f"{app_id} App Deleted"}

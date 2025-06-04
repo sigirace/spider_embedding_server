@@ -44,27 +44,6 @@ class Chunker:
             image_list=image_list or [],
         )
 
-    async def delete_meta(
-        self,
-        document: Document,
-    ):
-        chunk_list = await self.chunk_repository.get_by_document_id(
-            document_id=document.id,
-        )
-
-        async with self._uow_factory() as uow:
-
-            for chunk in chunk_list:
-                await self.image_repository.delete_by_chunk_id(
-                    chunk_id=chunk.id,
-                    session=uow.session,
-                )
-
-            await self.chunk_repository.delete_by_document_id(
-                document_id=document.id,
-                session=uow.session,
-            )
-
     async def make_chunks(
         self,
         document: Document,

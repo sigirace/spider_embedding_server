@@ -37,13 +37,13 @@ class Validator:
         app = await self.app_repository.get(oid)
 
         if not app:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="앱을 찾을 수 없습니다.",
             )
 
         if app.creator != user_id:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="권한이 없습니다.",
             )
@@ -60,7 +60,7 @@ class Validator:
         document = await self.document_repository.get(oid)
 
         if not document:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="문서를 찾을 수 없습니다.",
             )
@@ -80,7 +80,7 @@ class Validator:
         chunk = await self.chunk_repository.get(oid)
 
         if not chunk:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="청크를 찾을 수 없습니다.",
             )
@@ -99,7 +99,7 @@ class Validator:
         image = await self.image_repository.get(oid)
 
         if not image:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="이미지를 찾을 수 없습니다.",
             )
@@ -118,7 +118,7 @@ class Validator:
         embedding = await self.embed_repository.get(oid)
 
         if not embedding:
-            return HTTPException(
+            raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Embedding을 찾을 수 없습니다.",
             )

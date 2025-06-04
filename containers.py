@@ -1,10 +1,15 @@
 from dependency_injector import containers, providers
+from application.apps.delete_app import DeleteApp
+from application.chunks.delete_chunk import DeleteChunk
 from application.chunks.get_chunk import GetChunk
 from application.chunks.get_chunk_list import GetChunkList
 from application.chunks.update_chunk import UpdateChunk
+from application.documents.delete_document import DeleteDocument
 from application.embeddings.app_embedding import AppEmbedding
 from application.embeddings.chunk_embedding import ChunkEmbedding
+from application.embeddings.delete_embedding import DeleteEmbedding
 from application.embeddings.document_embedding import DocumentEmbedding
+from application.images.delete_image import DeleteImage
 from application.images.get_image import GetImage
 from application.images.get_image_list import GetImageList
 from application.images.update_image import UpdateImage
@@ -135,6 +140,7 @@ class Container(containers.DeclarativeContainer):
         vector_store_factory=providers.Object(create_vector_store),
         file_storage_service=file_storage_service,
         uow_factory=uow_factory,
+        getter=getter,
     )
     embedder = providers.Factory(
         Embedder,
@@ -163,6 +169,11 @@ class Container(containers.DeclarativeContainer):
         app_repository=app_repository,
         validator=validator,
     )
+    delete_app = providers.Factory(
+        DeleteApp,
+        deleter=deleter,
+        validator=validator,
+    )
 
     # document
     create_document = providers.Factory(
@@ -183,14 +194,19 @@ class Container(containers.DeclarativeContainer):
         file_storage_service=file_storage_service,
         validator=validator,
     )
+    delete_document = providers.Factory(
+        DeleteDocument,
+        deleter=deleter,
+        validator=validator,
+    )
 
     # chunk
     create_chunk = providers.Factory(
         CreateChunk,
         chunk_repository=chunk_repository,
-        file_storage_service=file_storage_service,
         chunker=chunker,
         validator=validator,
+        deleter=deleter,
     )
     get_chunk = providers.Factory(
         GetChunk,
@@ -208,6 +224,11 @@ class Container(containers.DeclarativeContainer):
         chunker=chunker,
         validator=validator,
     )
+    delete_chunk = providers.Factory(
+        DeleteChunk,
+        deleter=deleter,
+        validator=validator,
+    )
 
     # image
     get_image = providers.Factory(
@@ -222,6 +243,11 @@ class Container(containers.DeclarativeContainer):
     update_image = providers.Factory(
         UpdateImage,
         image_repository=image_repository,
+        validator=validator,
+    )
+    delete_image = providers.Factory(
+        DeleteImage,
+        deleter=deleter,
         validator=validator,
     )
 
@@ -281,4 +307,10 @@ class Container(containers.DeclarativeContainer):
         validator=validator,
         getter=getter,
         embedder=embedder,
+    )
+
+    delete_embedding = providers.Factory(
+        DeleteEmbedding,
+        deleter=deleter,
+        validator=validator,
     )

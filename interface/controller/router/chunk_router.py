@@ -2,6 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends
 
 from application.chunks.create_chunk import CreateChunk
+from application.chunks.delete_chunk import DeleteChunk
 from application.chunks.get_chunk import GetChunk
 from application.chunks.get_chunk_list import GetChunkList
 from application.chunks.update_chunk import UpdateChunk
@@ -110,3 +111,16 @@ async def update_chunk(
         user_id=user.user_id,
     )
     return ChunkMapper.to_detail_response(updated_chunk_detail)
+
+
+@router.delete("/{chunk_id}")
+@log_request()
+@inject
+async def delete_chunk(
+    chunk_id: str,
+    user: User = Depends(get_current_user),
+    delete_chunk: DeleteChunk = Depends(Provide[Container.delete_chunk]),
+):
+    await delete_chunk(chunk_id, user.user_id)
+
+    return {"message": f"{chunk_id} Chunk Deleted"}
