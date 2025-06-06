@@ -7,7 +7,7 @@ connections.connect(
     port="19530",  # 기본 포트
 )
 
-collection_name = "kang"
+collection_name = "admin_MYDT"
 
 # 컬렉션이 존재하면 삭제
 if utility.has_collection(collection_name):

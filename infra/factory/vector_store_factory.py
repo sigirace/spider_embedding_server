@@ -13,4 +13,5 @@ def create_vector_store(collection_name: str) -> MilvusService:
             "port": settings.milvus.milvus_port,
             "secure": False,  # TLS 미사용
         },
+        text_field="chunk_id",
     )

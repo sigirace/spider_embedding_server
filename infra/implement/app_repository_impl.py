@@ -33,6 +33,19 @@ class AppRepositoryImpl(IAppRepository):
         d = await self.collection.find_one({"_id": app_id}, session=session)
         return App.model_validate(d) if d else None
 
+    async def get_by_name(
+        self,
+        app_name: str,
+        creator: str,
+        *,
+        session: AsyncIOMotorClientSession | None = None,
+    ) -> App | None:
+        d = await self.collection.find_one(
+            {"app_name": app_name, "creator": creator},
+            session=session,
+        )
+        return App.model_validate(d) if d else None
+
     async def duplicate_check(
         self,
         creator: str,

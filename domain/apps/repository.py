@@ -23,6 +23,15 @@ class IAppRepository(ABC):
     ) -> App | None: ...
 
     @abstractmethod
+    async def get_by_name(
+        self,
+        app_name: str,
+        creator: str,
+        *,
+        session: AsyncIOMotorClientSession | None = None,
+    ) -> App | None: ...
+
+    @abstractmethod
     async def duplicate_check(
         self,
         creator: str,

@@ -50,6 +50,23 @@ class Validator:
 
         return app
 
+    async def app_name_validator(
+        self,
+        app_name: str,
+        user_id: str,
+    ) -> App:
+        app = await self.app_repository.get_by_name(
+            app_name=app_name,
+            creator=user_id,
+        )
+        if not app:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"{app_name} 이름으로 앱을 찾을 수 없습니다.",
+            )
+
+        return app
+
     async def document_validator(
         self,
         document_id: str,

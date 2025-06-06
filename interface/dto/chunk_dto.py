@@ -4,8 +4,8 @@ from interface.dto.image_dto import ImageResponse
 
 
 class ChunkRequest(BaseModel):
-    chunk_size: int = Field(default=500, description="청크 크기")
-    chunk_overlap: int = Field(default=20, description="청크 중복")
+    chunk_size: Optional[int] = Field(default=1024, description="청크 크기")
+    chunk_overlap: Optional[int] = Field(default=200, description="청크 중복")
 
 
 class ChunkResponse(BaseModel):

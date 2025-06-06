@@ -13,9 +13,12 @@ class EmbedAPIRepositoryImpl(IEmbedAPIRepository):
     def __init__(self, model: Embeddings):
         self._model = model
 
-    async def embed_query(self, query: str) -> List[float]:
+    async def aembed_query(self, query: str) -> List[float]:
         try:
             # LangChain Embeddings 는 동기 ⇒ thread off-load
             return await asyncio.to_thread(self._model.embed_query, query)
         except Exception as e:
             raise EmbedAPIError(str(e)) from e
+
+    def embed_query(self, query: str) -> List[float]:
+        return self._model.embed_query(query)

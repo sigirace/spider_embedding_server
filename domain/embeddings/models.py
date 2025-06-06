@@ -35,3 +35,21 @@ class Embedding(BaseModel):
     class Config:
         arbitrary_types_allowed = True
         populate_by_name = True
+
+
+class SearchEmbeddingSchema(BaseModel):
+    query: str
+    app_name: str
+    k: int
+    model_type: EmbedModelType
+    user_id: str
+
+
+class SearchResultSchema(BaseModel):
+    chunk_id: str
+    document_name: str
+    page: int
+    content: str
+    tags: Optional[List[str]]
+    file_creation_date: str
+    file_modification_date: Optional[str]

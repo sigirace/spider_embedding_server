@@ -18,7 +18,7 @@ class HaiqvKureEmbedding(OllamaEmbeddings):
     ...     base_url="https://ns-49-kure-v1.platform.haiqv.ai",
     ...     model="daynice/kure-v1"
     ... )
-    >>> embedder.embed_query("오늘 날씨가 어떨까?")
+    >>> embedder.aembed_query("오늘 날씨가 어떨까?")
     """
 
     base_url: str = HAIQV_KURE_EMBEDDING_URL

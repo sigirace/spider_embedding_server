@@ -1,5 +1,6 @@
 from dependency_injector import containers, providers
 from application.apps.delete_app import DeleteApp
+from application.apps.get_app_by_name import GetAppByName
 from application.chunks.delete_chunk import DeleteChunk
 from application.chunks.get_chunk import GetChunk
 from application.chunks.get_chunk_list import GetChunkList
@@ -9,6 +10,7 @@ from application.embeddings.app_embedding import AppEmbedding
 from application.embeddings.chunk_embedding import ChunkEmbedding
 from application.embeddings.delete_embedding import DeleteEmbedding
 from application.embeddings.document_embedding import DocumentEmbedding
+from application.embeddings.search_embedding import SearchEmbedding
 from application.images.delete_image import DeleteImage
 from application.images.get_image import GetImage
 from application.images.get_image_list import GetImageList
@@ -158,6 +160,10 @@ class Container(containers.DeclarativeContainer):
     )
     get_app = providers.Factory(
         GetApp,
+        validator=validator,
+    )
+    get_app_by_name = providers.Factory(
+        GetAppByName,
         validator=validator,
     )
     get_app_list = providers.Factory(
@@ -312,5 +318,11 @@ class Container(containers.DeclarativeContainer):
     delete_embedding = providers.Factory(
         DeleteEmbedding,
         deleter=deleter,
+        validator=validator,
+    )
+
+    search_embedding = providers.Factory(
+        SearchEmbedding,
+        embedder=embedder,
         validator=validator,
     )

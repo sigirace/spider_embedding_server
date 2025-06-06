@@ -14,7 +14,7 @@ def create_embed_api_repo(model_type: str | None = None) -> IEmbedAPIRepository:
     모델 이름(kure, nomic)을 받아 EmbedAPIRepositoryImpl 인스턴스를 생성해 반환.
 
     >>> repo = create_embed_api_repo("kure")
-    >>> vector = await repo.embed_query("안녕")
+    >>> vector = await repo.aembed_query("안녕")
     """
     key = (model_type or "kure").lower()
 

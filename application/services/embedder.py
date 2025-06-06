@@ -3,6 +3,8 @@ from typing import Callable, List, Any
 import uuid
 
 from bson import ObjectId
+from fastapi import HTTPException, status
+from langchain_core.documents import Document
 
 from common.uow import MongoUnitOfWork
 from domain.chunks.models import Chunk
@@ -12,6 +14,7 @@ from domain.embeddings.models import Embedding, EmbedModelType, EmbedSchema
 from domain.embeddings.repository import IEmbedRepository
 from domain.vectors.repository import IVectorStoreRepository
 from utils.object_utils import get_str_id
+from langchain_core.embeddings import Embeddings
 
 
 class Embedder:
@@ -31,13 +34,23 @@ class Embedder:
 
     @staticmethod
     def build_query(schema: EmbedSchema) -> str:
+        if not schema.image_descriptions and not schema.text.strip():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Image descriptions and text are both empty",
+            )
+
         parts = [f"{i+1}. {d}" for i, d in enumerate(schema.image_descriptions)]
-        parts.append(schema.text)
+        if schema.text.strip():
+            parts.append(schema.text.strip())
+
         return "\n".join(parts).strip()
 
-    async def embed(self, query: str, model_type: str) -> List[float]:
-        api_repo = self._api_factory(model_type)
-        return await api_repo.embed_query(query)
+    async def aembed(
+        self, query: str, embedding_model: IEmbedAPIRepository
+    ) -> List[float]:
+        embed_list = await embedding_model.aembed_query(query)
+        return embed_list
 
     async def delete_existing_embeddings(
         self,
@@ -54,6 +67,18 @@ class Embedder:
             chunk.embeded_at = None
             await self.chunk_repository.update(chunk, session=uow.session)
 
+    async def retrieve(
+        self,
+        query: str,
+        k: int,
+        collection_name: str,
+        model_type: str,
+    ) -> List[Document]:
+        store = self.vector_store_factory(collection_name)
+        embedding_model = self._api_factory(model_type)
+        store.override_embedding_function(embedding_model)
+        return await store.similarity_search(query=query, k=k)
+
     async def execute(
         self,
         chunk: Chunk,
@@ -63,15 +88,19 @@ class Embedder:
         collection_name: str,
     ) -> str:
         query = self.build_query(embed_schema)
-        vector = await self.embed(query, model_type)
+        embedding_model = self._api_factory(model_type)
+        vector = await self.aembed(query, embedding_model)
         store = self.vector_store_factory(collection_name)
+        store.override_embedding_function(embedding_model)
 
         async with self._uow_factory() as uow:
             # 새로운 임베딩 저장
             embed_pk = await store.save(
-                text=query,
                 embedding=vector,
-                metadata={"chunk_id": str(chunk.id), "model": model_type},
+                chunk_id=get_str_id(chunk.id),
+                metadata={
+                    "model": model_type,
+                },
             )
             record = Embedding(
                 chunk_id=chunk.id,

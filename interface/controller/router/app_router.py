@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 from application.apps.create_app import CreateApp
 from application.apps.delete_app import DeleteApp
 from application.apps.get_app import GetApp
+from application.apps.get_app_by_name import GetAppByName
 from application.apps.get_app_list import GetAppList
 from application.apps.update_app import UpdateApp
 from common.log_wrapper import log_request
@@ -51,6 +52,18 @@ async def get_app(
     get_app: GetApp = Depends(Provide[Container.get_app]),
 ):
     app = await get_app(app_id, user.user_id)
+    return AppMapper.to_response(app)
+
+
+@router.get("/name/{app_name}", response_model=AppResponse)
+@log_request()
+@inject
+async def get_app_by_name(
+    app_name: str,
+    user: User = Depends(get_current_user),
+    get_app_by_name: GetAppByName = Depends(Provide[Container.get_app_by_name]),
+):
+    app = await get_app_by_name(app_name, user.user_id)
     return AppMapper.to_response(app)
 
 

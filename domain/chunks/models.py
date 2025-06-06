@@ -42,8 +42,8 @@ class Chunk(ChunkDetail, LifeCycle):
 
 class ChunkRequest(BaseModel):
     document_id: str = Field(..., description="문서 ID")
-    chunk_size: int = Field(default=500, description="청크 크기")
-    chunk_overlap: int = Field(default=50, description="청크 중복")
+    chunk_size: int = Field(default=1024, description="청크 크기")
+    chunk_overlap: int = Field(default=200, description="청크 중복")
 
 
 class ChunkDetailResponse(Chunk):

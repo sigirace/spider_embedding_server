@@ -23,5 +23,5 @@ class HaiqvNomicEmbedding(Embeddings):
 
         return response.json()["data"]
 
-    def embed_query(self, text: str) -> List[float]:
+    def aembed_query(self, text: str) -> List[float]:
         return self.embed_documents([text])[0]["embedding"]
