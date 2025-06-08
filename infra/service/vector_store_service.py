@@ -67,8 +67,7 @@ class MilvusService(IVectorStoreRepository):
             embedding_function=self.embedding_function,
             collection_name=self.collection_name,
             connection_args={
-                "host": connection_args["host"],
-                "port": connection_args["port"],
+                "uri": f"http://{connection_args['host']}:{connection_args['port']}",
                 "secure": connection_args.get("secure", False),
             },
             text_field=text_field,
