@@ -19,14 +19,16 @@ from langchain_core.embeddings import Embeddings
 _INDEX_PARAMS = {
     "index_type": "IVF_FLAT",
     "metric_type": "L2",
-    "params": {"nlist": 1024},
+    "params": {"nlist": 768},  # nomic
 }
 
 
-class DummyEmbeddingFunction:
-    def aembed_query(self, text: str) -> List[float]:
-        # 테스트용 또는 기본용
-        return [0.0] * 768  # 또는 self.embedding_model.aembed_query(text)
+class DummyEmbeddingFunction(Embeddings):
+    def embed_query(self, text: str) -> List[float]:
+        return [0.0] * 768
+
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        return [[0.0] * 768 for _ in texts]
 
 
 class MilvusService(IVectorStoreRepository):

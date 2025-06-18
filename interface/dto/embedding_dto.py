@@ -10,7 +10,7 @@ class EmbedModelType(str, Enum):
 
 class EmbedRequest(BaseModel):
     model_type: EmbedModelType = Field(
-        default=EmbedModelType.KURE,
+        default=EmbedModelType.NOMIC,
         description="임베딩 모델 타입",
     )
 
@@ -20,7 +20,7 @@ class SearchRequest(BaseModel):
     query: str = Field(..., description="검색 쿼리")
     k: Optional[int] = Field(default=3, description="검색 결과 개수")
     model_type: Optional[EmbedModelType] = Field(
-        default=EmbedModelType.KURE,
+        default=EmbedModelType.NOMIC,
         description="임베딩 모델 타입",
     )
 

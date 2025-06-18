@@ -16,7 +16,7 @@ def create_embed_api_repo(model_type: str | None = None) -> IEmbedAPIRepository:
     >>> repo = create_embed_api_repo("kure")
     >>> vector = await repo.aembed_query("안녕")
     """
-    key = (model_type or "kure").lower()
+    key = (model_type or "nomic").lower()
 
     if key not in EMBED_MODEL_REGISTRY:
         raise ValueError(f"지원하지 않는 임베딩 모델: {model_type}")

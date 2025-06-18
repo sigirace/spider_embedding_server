@@ -52,6 +52,9 @@ def chunking(
         write_images=True,
         image_path=image_path,  # 원하는 경로에 저장
         show_progress=True,
+        ignore_images=True,
+        ignore_graphics=True,
+        margins=12,  # 사방 12pt만 크롭
     )
 
     spliter = get_spliter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)

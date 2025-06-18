@@ -16,12 +16,17 @@ class HaiqvNomicEmbedding(Embeddings):
     base_url: str = HAIQV_NOMIC_EMBEDDING_URL
     model: str = HAIQV_NOMIC_EMBEDDING_MODEL
 
+    def embed_query(self, text: str) -> List[float]:
+        try:
+            response = requests.post(
+                f"{self.base_url}/api/embeddings",
+                json={"model": self.model, "prompt": text},
+                timeout=10,
+            )
+            response.raise_for_status()
+            return response.json()["embedding"]
+        except Exception as e:
+            raise RuntimeError(f"Nomic embedding API error: {e}") from e
+
     def embed_documents(self, texts: List[str]) -> List[List[float]]:
-        payload = {"model": self.model, "input": texts}
-        response = requests.post(self.base_url, json=payload)
-        response.raise_for_status()
-
-        return response.json()["data"]
-
-    def aembed_query(self, text: str) -> List[float]:
-        return self.embed_documents([text])[0]["embedding"]
+        return [self.embed_query(text) for text in texts]
