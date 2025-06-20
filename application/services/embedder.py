@@ -47,7 +47,9 @@ class Embedder:
         return "\n".join(parts).strip()
 
     async def aembed(
-        self, query: str, embedding_model: IEmbedAPIRepository
+        self,
+        query: str,
+        embedding_model: IEmbedAPIRepository,
     ) -> List[float]:
         embed_list = await embedding_model.aembed_query(query)
         return embed_list
